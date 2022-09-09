@@ -9,6 +9,7 @@ try:
     import vonage
     import psutil
 except ImportError:
+    # Create an install function for this
     os.system("pip install vonage")
     os.system("pip install psutil")
 
@@ -34,9 +35,14 @@ def getProcess(name):
 
     return False
 
+# TODO: Do this in an init_environment() function
+#       and call it in the start of main or before the main. decide what makes more sense
 if platform.system() == "Windows" and getProcess("excel.exe"):
+    # TODO: Dont kill excel, show a message if excel is running and exit  
     os.system("taskkill /im excel.exe")
 
+# TODO: put this in an init_config() function 
+#       and call it in the if __name__ == "__main__" section before calling main
 config = configparser.ConfigParser()
 try:
     open("config.ini")
@@ -64,6 +70,8 @@ except FileNotFoundError:
         writer = csv.DictWriter(contacts_file, fieldnames = fieldnames)
         writer.writeheader()
 
+# TODO: configure this in the if __name__ == "__main__" section before calling main
+#       this way it would be accessible to other functions, and be organized as well
 client = vonage.Client(key = config["api_credentials"]["api_key"], secret = config["api_credentials"]["api_secret"])
 sms = vonage.Sms(client)
 
@@ -92,6 +100,7 @@ def dial_number():
     send_sms(sender_name, victim_number, sms_text, sms_count)
 
 def contacts():
+    # TODO: Call clear at the start of the loop once instead of here
     clear()
 
     with open("contacts.csv", "r") as contacts_file:
@@ -106,14 +115,19 @@ def contacts():
     select = input("\nSelect task and press Enter: ")
 
     if select == "*":
+        # TODO: Don't let contact_creating function call you here again, you can continue the flow normally after the contact is created
+        #       Maybe add a loop here as well? until the user decides he wants to quit to menu or send an sms 
         contact_creating()
     elif select.lower() == "m":
+        # TODO: NO, let the loop in the main function handle this, you can just return here
         menu()
     else:
         with open("contacts.csv", "r") as contacts_file:
             reader = csv.DictReader(contacts_file)
             rows = list(reader)
 
+        # TODO: duplication of code here, this is the same as dial_number. 
+        #       you can make dial_number configurable with an extra parameter.
         sender_name = input("Sender name: ")
 
         select_num = int(select) - 1
@@ -124,6 +138,7 @@ def contacts():
 
         send_sms(sender_name, victim_number, sms_text, sms_count)
 
+        # TODO: NO, let the loop in the main function handle this
         menu()
 
 def contact_creating():
@@ -136,6 +151,7 @@ def contact_creating():
         writer = csv.DictWriter(contacts_file, fieldnames = fieldnames)
         writer.writerow({"name": contact_name, "phone_number": contact_number})
 
+    # TODO: Don't let contact_creating function call the contacts again, you can continue the flow normally after the contact is created inside the calling function    
     contacts()
 
 def change_api_credentials():
@@ -150,6 +166,7 @@ def change_api_credentials():
     
     config.read("config.ini")
 
+    # TODO: NO, let the loop in the main function handle this
     menu()
 
 def menu():
@@ -169,6 +186,11 @@ def menu():
         change_api_credentials()
     else:
         menu()
+
+# TODO: create a main function with a while loop that handles the menu selection, with an option to exit the progam. (you can just change name from menu to main and add a loop)
+#       don't do a call to menu inside menu!!! (recursion) 
+#       At the start of the loop call the clear function. (dont call it inside functions, handling of the ui logic should always be in the main function)
+#       at the end of the main loop add a blocking message. like ("to continue press any key") in order for the status messages to show. (like on send_sms) 
 
 if __name__ == "__main__":
     menu()
