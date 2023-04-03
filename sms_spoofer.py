@@ -157,7 +157,7 @@ def change_api_credentials():
         config.read("config.ini")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__
     main()
 
     while True:
